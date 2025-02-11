@@ -19,19 +19,19 @@ IntervalTimer myTimer;
 void Timtask(){
 
   Shoulder1 = analogRead(12)/4.f;
-Shoulder2 = analogRead(13)/4.f;
-Upperarm = analogRead(11)/4.f;
-Elbow = analogRead(10)/4.f;
-Forearm = analogRead(A16)/4.f;
-wrist1 = analogRead(A14)/4.f;
-wrist2 = analogRead(A15)/4.f;
-finger[0] = analogRead(7)/4;
-finger[1] = analogRead(5)/4;
-finger[2] = analogRead(3)/4;
-finger[3] = analogRead(1)/4;
-finger[4] = analogRead(A17)/4;
+  Shoulder2 = analogRead(13)/4.f;
+  Upperarm = analogRead(11)/4.f;
+  Elbow = analogRead(10)/4.f;
+  Forearm = analogRead(A16)/4.f;
+  wrist1 = analogRead(A14)/4.f;
+  wrist2 = analogRead(A15)/4.f;
+  finger[0] = analogRead(7)/4.f;
+  finger[1] = analogRead(5)/4.f;
+  finger[2] = analogRead(3)/4.f;
+  finger[3] = analogRead(1)/4.f;
+  finger[4] = analogRead(A17)/4.f;
 
-CAN_message_t msg1;
+  CAN_message_t msg1;
     // msg1.flags.extended = 0;
     msg1.id = 0x111;
     // msg1.len = 5;
@@ -64,6 +64,7 @@ CAN_message_t msg1;
     msg2.buf[7] = 0;
     msg2.buf[8] = 0;
     can3.write(msg2);
+
 
   Shoulder1 = -(Shoulder1-70)/53.15775;
   if(Shoulder1>1.56){
@@ -121,6 +122,23 @@ CAN_message_t msg1;
     PICO_SERIAL.print("\t");
   }
   PICO_SERIAL.println("EE");
+
+
+  Serial.print("SS\t");
+  Serial.print(Shoulder1,4);
+  Serial.print("\t");
+  Serial.print(Shoulder2,4);
+  Serial.print("\t");
+  Serial.print(Upperarm,4);
+  Serial.print("\t");
+  Serial.print(Elbow,4);
+  Serial.print("\t");
+  Serial.print(Forearm,4);
+  Serial.print("\t");
+  Serial.print(wrist1,4);
+  Serial.print("\t");
+  Serial.print(wrist2,4);
+  Serial.print("\t");
 }
 
 
