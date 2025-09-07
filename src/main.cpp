@@ -1,8 +1,15 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
+#include "RingBuffer.hpp"
 
 #define PICO_SERIAL   Serial7
+#define VALUES_SIZE   10
 
+ 
+
+
+RingBuffer<256> serial_buffer;
+float parsed_values[VALUES_SIZE]{};
 FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> can3;
 
 float Shoulder1  = 0;
@@ -12,6 +19,8 @@ float Elbow  = 0;
 float Forearm  = 0;
 float wrist1 = 0;
 float wrist2 = 0;
+
+
 
 float finger[13]{};
 
@@ -124,21 +133,85 @@ void Timtask(){
   PICO_SERIAL.println("EE");
 
 
-  Serial.print("SS\t");
-  Serial.print(Shoulder1,4);
-  Serial.print("\t");
-  Serial.print(Shoulder2,4);
-  Serial.print("\t");
-  Serial.print(Upperarm,4);
-  Serial.print("\t");
-  Serial.print(Elbow,4);
-  Serial.print("\t");
-  Serial.print(Forearm,4);
-  Serial.print("\t");
-  Serial.print(wrist1,4);
-  Serial.print("\t");
-  Serial.print(wrist2,4);
-  Serial.print("\t");
+  // Serial.print("SS\t");
+  // Serial.print(Shoulder1,4);
+  // Serial.print("\t");
+  // Serial.print(Shoulder2,4);
+  // Serial.print("\t");
+  // Serial.print(Upperarm,4);
+  // Serial.print("\t");
+  // Serial.print(Elbow,4);
+  // Serial.print("\t");
+  // Serial.print(Forearm,4);
+  // Serial.print("\t");
+  // Serial.print(wrist1,4);
+  // Serial.print("\t");
+  // Serial.print(wrist2,4);
+  // Serial.print("\t");
+
+  // char str;
+
+  // while(PICO_SERIAL.available()){
+  //    int data = PICO_SERIAL.read(); // 1バイト読み取る
+  //   if (data != -1) {              // データが有効か確認
+  //       str = static_cast<char>(data); // char 型に変換
+  //       serial_buffer.push(str);
+  //   }
+
+  // }
+
+  // auto extracted_message = extractMessage(serial_buffer);
+  // if (extracted_message.has_value()) {
+  //       std::string message = extracted_message.value();
+      
+
+
+  //   size_t values_count = 0;
+  //   const char* str = message.c_str();  // C文字列に変換
+  //   char* end_ptr = nullptr;
+
+  //   while (values_count < VALUES_SIZE) {
+  //       // strtof を使って変換
+  //       float value = strtof(str, &end_ptr);
+
+  //       // 変換できない場合は終了
+  //       if (str == end_ptr) {
+  //           // std::cerr << "Error: Failed to convert string to float: " << str << std::endl;
+  //           break;
+  //       }
+
+  //       parsed_values[values_count++] = value;
+
+  //       // 次の値に進む
+  //       str = end_ptr;
+
+  //       // タブか空白をスキップ
+  //       while (*str == '\t' || *str == ' ') {
+  //           ++str;
+  //       }
+
+  //       // 終端に達したら終了
+  //       if (*str == '\0') {
+  //           break;
+  //       }
+  //   }
+
+  //       if (values_count != VALUES_SIZE) {
+  //         Serial.print("Error: Not enough parsed values!\n");
+  //         Serial.print(values_count);
+  //       }else{
+  //         // _Serial.print("float array\n");
+  //            Serial.print("Parsed values: ");
+  //           for (int i = 0; i < VALUES_SIZE; i++) {
+             
+  //                Serial.print(parsed_values[i],4);
+  //                Serial.print("\t");
+  //           }
+  //           //  Serial.print("\n");
+
+  //       }
+
+  // }
 }
 
 
@@ -148,10 +221,73 @@ void setup() {
   PICO_SERIAL.begin(115200);
   can3.begin();
   can3.setBaudRate(1000000);
-  myTimer.begin(Timtask, 10000);//μs
+  myTimer.begin(Timtask, 30000);//μs
 
 
 }
 
 void loop() {
+  // Serial.print("bbb");
+
+  char str;
+  while(PICO_SERIAL.available()){
+     int data = PICO_SERIAL.read(); // 1バイト読み取る
+    if (data != -1) {              // データが有効か確認
+        str = static_cast<char>(data); // char 型に変換
+        serial_buffer.push(str);
+        // Serial.print("aa");
+    }
+
+  }
+
+  auto extracted_message = extractMessage(serial_buffer);
+  if (extracted_message.has_value()) {
+        std::string message = extracted_message.value();
+      
+
+
+    size_t values_count = 0;
+    const char* str = message.c_str();  // C文字列に変換
+    char* end_ptr = nullptr;
+
+    while (values_count < VALUES_SIZE) {
+        // strtof を使って変換
+        float value = strtof(str, &end_ptr);
+
+        // 変換できない場合は終了
+        if (str == end_ptr) {
+            // std::cerr << "Error: Failed to convert string to float: " << str << std::endl;
+            break;
+        }
+
+        parsed_values[values_count++] = value;
+
+        // 次の値に進む
+        str = end_ptr;
+
+        // タブか空白をスキップ
+        while (*str == '\t' || *str == ' ') {
+            ++str;
+        }
+
+        // 終端に達したら終了
+        if (*str == '\0') {
+            break;
+        }
+    }
+
+        if (values_count != VALUES_SIZE) {
+          Serial.print("Error: Not enough parsed values!\n");
+          Serial.print(values_count);
+        }else{
+             Serial.print("Parsed values: ");
+            for (int i = 0; i < VALUES_SIZE; i++) {
+                 Serial.print(parsed_values[i],4);
+                 Serial.print("\t");
+            }
+             Serial.print("\n");
+
+        }
+
+  }
 }
